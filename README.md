@@ -116,4 +116,4 @@ src-tauri/
 
 ## License
 
-Private / unlicensed unless otherwise stated.
+[MIT](LICENSE)
