@@ -30,13 +30,14 @@ export function useNativeMenu(handlersRef, recent) {
               ]
             : [
                 ...(await Promise.all(
-                  h().recent.slice(0, 10).map(async (p, i) =>
-                    MenuItem.new({
+                  h().recent.slice(0, 10).map(async (item, i) => {
+                    const path = typeof item === "string" ? item : item.path;
+                    return MenuItem.new({
                       id: `recent-${i}`,
-                      text: basename(p),
-                      action: () => h().handleOpenRecent(p),
-                    })
-                  )
+                      text: basename(path),
+                      action: () => h().handleOpenRecent(path),
+                    });
+                  })
                 )),
                 await PredefinedMenuItem.new({ item: "Separator" }),
                 await MenuItem.new({

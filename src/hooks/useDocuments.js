@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { open, save, ask } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { basename } from "../lib/paths";
 import { WELCOME_MD } from "../lib/markdown";
+import { loadSession, saveSession } from "../lib/medStorage";
 import { invalidatePreviewCache } from "./useMarkdownPreview";
 
 function newDoc(overrides = {}) {
@@ -20,6 +21,8 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
   const [docs, setDocs] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [status, setStatus] = useState("Ready");
+  const [sessionReady, setSessionReady] = useState(false);
+  const skipNextSave = useRef(true);
 
   const activeDoc = useMemo(
     () => docs.find((d) => d.id === activeId) || null,
@@ -41,7 +44,8 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
   );
 
   const openPaths = useCallback(
-    async (paths) => {
+    async (paths, options = {}) => {
+      const { activePath = null, activate = true } = options;
       const list = (Array.isArray(paths) ? paths : [paths]).filter(Boolean);
       if (!list.length) return;
 
@@ -65,6 +69,7 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
       }
       if (!opened.length) return;
 
+      let focusId = null;
       setDocs((prev) => {
         const next = [...prev];
         let lastId = null;
@@ -72,19 +77,59 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
           const existing = next.find((d) => d.path && d.path === doc.path);
           if (existing) {
             lastId = existing.id;
+            if (activePath && existing.path === activePath) focusId = existing.id;
             continue;
           }
           next.push(doc);
           lastId = doc.id;
+          if (activePath && doc.path === activePath) focusId = doc.id;
         }
-        if (lastId) setActiveId(lastId);
+        if (activate) {
+          setActiveId(focusId || lastId);
+        }
         return next;
       });
-      onEnterEditor?.();
+      if (activate) onEnterEditor?.();
       setStatus("Opened");
     },
     [pushRecent, onEnterEditor]
   );
+
+  // Restore previous session once on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const session = await loadSession();
+        if (cancelled) return;
+        if (session.paths?.length) {
+          await openPaths(session.paths, {
+            activePath: session.activePath,
+            activate: true,
+          });
+        }
+      } catch (e) {
+        console.warn("session restore failed", e);
+      } finally {
+        if (!cancelled) {
+          skipNextSave.current = false;
+          setSessionReady(true);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist open file paths whenever tabs change
+  useEffect(() => {
+    if (!sessionReady || skipNextSave.current) return;
+    const paths = docs.map((d) => d.path).filter(Boolean);
+    const activePath = docs.find((d) => d.id === activeId)?.path || null;
+    saveSession({ paths, activePath });
+  }, [docs, activeId, sessionReady]);
 
   const handleOpen = useCallback(async () => {
     const selected = await open({
@@ -187,5 +232,6 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
     handleSave,
     handleSaveAs,
     handleCloseTab,
+    sessionReady,
   };
 }

@@ -1,80 +1,95 @@
 # MED — Markdown Editor
 
-A fast desktop Markdown editor with live preview and Mermaid diagrams.
-Built with Tauri 2 + React + Mantine.
+A fast desktop Markdown editor with live preview and Mermaid diagrams.  
+Built with **Tauri 2**, **React**, and **Mantine**.
 
 ## Features
 
-- Split view: editor (left) + live preview (right) in **one window**
-- **Tabs** for multiple open files (Notepad-style)
-- **File menu**: New, Open, Open Recent, Save, Save As, Close Tab
-- Recent files + settings stored in `~/.med/`
-- Mermaid diagrams render in the preview (theme follows light/dark)
-- Registered as a **Markdown file handler** (`.md`, `.markdown`, `.mdx`) so you can set MED as the default app or use **Open With**
-- Shortcuts: `⌘N` New · `⌘O` Open · `⌘S` Save · `⇧⌘S` Save As · `⌘W` Close tab
-- Light / dark mode
+- **Split view** — editor (left) + live preview (right) in one window
+- **Tabs** — multiple open files (Notepad-style)
+- **Home screen** — Open / New plus a scrollable recent list (paths shown as `~/…`)
+- **Session restore** — files left open are restored on relaunch
+- **Native menu bar** — File / Edit / View (no in-window toolbar)
+- **Open Recent** — in the File menu and on the home screen
+- **Mermaid** — diagrams render in the preview; theme follows light/dark
+- **Content-based scroll sync** — editor and preview stay aligned by source line, not pane height
+- **Preview cache** — tab switches reuse rendered HTML (including Mermaid SVGs)
+- **Markdown file handler** — register as default app for `.md`, `.markdown`, `.mdx`
+- Light / dark mode (neutral grey + soft off-white)
 
-## Colours
+### Shortcuts
 
-| Token        | Value                      |
-|--------------|----------------------------|
-| Light bg     | `#ede3cd` (warm parchment) |
-| Dark bg      | `#1C1A15`                  |
-| Primary      | `#F6821F` (orange)         |
-| Editor light | `#f7f0e1`                  |
-| Editor dark  | `#25221C`                  |
+| Shortcut | Action |
+|----------|--------|
+| `⌘N` | New |
+| `⌘O` | Open |
+| `⌘S` | Save |
+| `⇧⌘S` | Save As |
+| `⌘W` | Close tab |
+| `⇧⌘L` | Toggle light / dark |
+| `⇧⌘P` | Toggle live preview |
 
-## Prerequisites (macOS)
+## Theme
 
-```bash
-# Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+| Token | Light | Dark |
+|-------|--------|------|
+| App background | `#f0f0f0` | `#1e1e1e` |
+| Editor | `#f7f7f7` | `#2a2a2a` |
+| Code blocks | `#e8e8e8` | `#333333` |
+| Primary | `#F6821F` (orange) | same |
 
-# Xcode CLT (if needed)
-xcode-select --install
+## Data stored in `~/.med/`
 
-# Node.js 18+
+```
+~/.med/config.json    # theme, live-preview preference
+~/.med/recent.json    # [{ "path": "…", "lastOpened": … }, …]
+~/.med/session.json   # { "paths": […], "activePath": "…" }
 ```
 
-## Run in development
+Legacy `recent.json` entries that are plain strings are migrated automatically.
+
+## Prerequisites
+
+- **Node.js** 18+
+- **Rust** (stable) — [rustup](https://rustup.rs)
+- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+
+## Development
 
 ```bash
-cd markdown-preview-app
-npm install
-npm run tauri dev
+# install (npm or pnpm)
+pnpm install   # or: npm install
+
+# run
+pnpm tauri dev # or: npm run tauri dev
 ```
 
-## Build release `.app` / `.dmg`
+## Build
 
 ```bash
-npm run tauri build
+pnpm tauri build   # or: npm run tauri build
 ```
 
-Output:
+Outputs (macOS):
 
 ```
 src-tauri/target/release/bundle/macos/
 src-tauri/target/release/bundle/dmg/
 ```
 
-After installing the `.app`, right-click any `.md` file → **Get Info** → **Open with** → choose **MED** → **Change All…** to set it as the default Markdown editor.
+### Set as default Markdown app (macOS)
 
-## Config location
-
-```
-~/.med/config.json   # theme, live-preview preference
-~/.med/recent.json   # recent file paths
-```
+After installing the `.app`: right-click any `.md` file → **Get Info** → **Open with** → **MED** → **Change All…**.
 
 ## Project layout
 
 ```
 src/
-├── App.jsx                 # screen switch + wiring
+├── App.jsx                 # home ↔ editor wiring
 ├── main.jsx
 ├── theme.js
 ├── components/
-│   ├── HomeScreen.jsx      # Zed-style open + recent
+│   ├── HomeScreen.jsx      # open / new / recent
 │   ├── EditorScreen.jsx
 │   ├── TabBar.jsx
 │   ├── EditorPane.jsx
@@ -82,15 +97,23 @@ src/
 ├── hooks/
 │   ├── useConfig.js
 │   ├── useRecentFiles.js
-│   ├── useDocuments.js
+│   ├── useDocuments.js     # tabs + session restore
 │   ├── useMarkdownPreview.js
-│   └── useNativeMenu.js    # native File/Edit/View menu
+│   ├── useNativeMenu.js
+│   └── useScrollSync.js    # content-based scroll sync
 └── lib/
     ├── markdown.js         # marked + mermaid
-    ├── medStorage.js       # ~/.med/
-    └── paths.js
+    ├── medStorage.js       # ~/.med/ read/write
+    └── paths.js            # basename, ~/ display paths
 
-src-tauri/                  # MED bundle, fileAssociations, Info.plist
+src-tauri/
+├── tauri.conf.json         # productName MED, fileAssociations
+├── Info.plist              # macOS document types
+├── capabilities/
+├── icons/
+└── src/                    # open-with / session file events
 ```
 
-No in-window toolbar — Open / Save / New / theme / live live in the **native menu bar**.
+## License
+
+Private / unlicensed unless otherwise stated.

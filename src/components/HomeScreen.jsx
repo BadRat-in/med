@@ -1,5 +1,18 @@
-import { Box, Stack, Text, Button, Group, UnstyledButton, Modal } from "@mantine/core";
-import { basename, dirname } from "../lib/paths";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Stack,
+  Text,
+  Button,
+  Group,
+  UnstyledButton,
+  Modal,
+  ScrollArea,
+} from "@mantine/core";
+import { homeDir } from "@tauri-apps/api/path";
+import { basename, toTildePath } from "../lib/paths";
+
+const RECENT_LIST_HEIGHT = 280;
 
 export default function HomeScreen({
   isDark,
@@ -12,12 +25,19 @@ export default function HomeScreen({
   aboutOpen,
   setAboutOpen,
 }) {
+  const [home, setHome] = useState("");
   const bg = isDark ? theme.other.darkBg : theme.other.lightBg;
   const border = isDark ? theme.other.borderDark : theme.other.borderLight;
   const cardBg = isDark ? theme.other.editorDark : theme.other.editorLight;
   const hoverBg = isDark ? "#333333" : "#e8e8e8";
   const headerBg = isDark ? "#1e1e1e" : "#e8e8e8";
   const text = isDark ? "#e8e8e8" : "#1a1a1a";
+
+  useEffect(() => {
+    homeDir()
+      .then(setHome)
+      .catch(() => setHome(""));
+  }, []);
 
   return (
     <Box
@@ -27,6 +47,7 @@ export default function HomeScreen({
         display: "flex",
         flexDirection: "column",
         color: text,
+        overflow: "hidden",
       }}
     >
       <Box
@@ -46,7 +67,8 @@ export default function HomeScreen({
           alignItems: "center",
           justifyContent: "center",
           padding: 32,
-          overflow: "auto",
+          minHeight: 0,
+          overflow: "hidden",
         }}
       >
         <Stack gap="xl" maw={520} w="100%" align="stretch">
@@ -97,41 +119,53 @@ export default function HomeScreen({
                   </Text>
                 </UnstyledButton>
               </Group>
+
               <Box
                 style={{
                   borderRadius: 10,
                   border: `1px solid ${border}`,
                   background: cardBg,
                   overflow: "hidden",
+                  height: RECENT_LIST_HEIGHT,
                 }}
               >
-                {recent.map((p, i) => (
-                  <UnstyledButton
-                    key={p}
-                    onClick={() => onOpenRecent(p)}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      padding: "10px 14px",
-                      borderBottom:
-                        i < recent.length - 1 ? `1px solid ${border}` : "none",
-                      textAlign: "left",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = hoverBg;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    <Text size="sm" fw={500} lineClamp={1}>
-                      {basename(p)}
-                    </Text>
-                    <Text size="xs" c="dimmed" lineClamp={1}>
-                      {dirname(p) || p}
-                    </Text>
-                  </UnstyledButton>
-                ))}
+                <ScrollArea
+                  h={RECENT_LIST_HEIGHT}
+                  type="scroll"
+                  offsetScrollbars
+                  scrollbarSize={8}
+                >
+                  {recent.map((item, i) => {
+                    const path = item?.path ?? item;
+                    return (
+                      <UnstyledButton
+                        key={path}
+                        onClick={() => onOpenRecent(path)}
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderBottom:
+                            i < recent.length - 1 ? `1px solid ${border}` : "none",
+                          textAlign: "left",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = hoverBg;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
+                      >
+                        <Text size="sm" fw={500} lineClamp={1}>
+                          {basename(path)}
+                        </Text>
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          {toTildePath(path, home)}
+                        </Text>
+                      </UnstyledButton>
+                    );
+                  })}
+                </ScrollArea>
               </Box>
             </Stack>
           ) : (

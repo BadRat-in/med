@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { loadRecent, saveRecent, MAX_RECENT } from "../lib/medStorage";
+import { loadRecent, saveRecent, MAX_RECENT, normalizeRecentEntry } from "../lib/medStorage";
 
 export function useRecentFiles() {
   const [recent, setRecent] = useState([]);
@@ -11,7 +11,14 @@ export function useRecentFiles() {
   const pushRecent = useCallback(async (path) => {
     if (!path) return;
     setRecent((prev) => {
-      const next = [path, ...prev.filter((p) => p !== path)].slice(0, MAX_RECENT);
+      const entry = normalizeRecentEntry({
+        path,
+        lastOpened: Date.now(),
+      });
+      const next = [
+        entry,
+        ...prev.filter((p) => p.path !== path),
+      ].slice(0, MAX_RECENT);
       saveRecent(next);
       return next;
     });
