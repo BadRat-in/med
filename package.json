@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "set -a && source .env && set +a && tauri"
   },
   "dependencies": {
     "@mantine/core": "^7.13.0",
