@@ -1,5 +1,15 @@
 # MED — Markdown Editor
 
+[![CI](https://github.com/RKInnovate/med/actions/workflows/ci.yml/badge.svg)](https://github.com/RKInnovate/med/actions/workflows/ci.yml)
+[![Release](https://github.com/RKInnovate/med/actions/workflows/release.yml/badge.svg)](https://github.com/RKInnovate/med/actions/workflows/release.yml)
+![Platform](https://img.shields.io/badge/platform-macOS-black?logo=apple&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-stable-1E2650?logo=rust&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-v2-24C8DB?logo=tauri&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![Mantine](https://img.shields.io/badge/Mantine-9-339AF0?logo=mantine&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-lightblue)
+
 A fast desktop Markdown editor with live preview and Mermaid diagrams.  
 Built with **Tauri 2**, **React**, and **Mantine**.
 
