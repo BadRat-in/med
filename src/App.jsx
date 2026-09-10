@@ -1,32 +1,26 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useMantineTheme } from "@mantine/core";
-import { listen } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/core";
-
-import HomeScreen from "./components/HomeScreen";
-import EditorScreen from "./components/EditorScreen";
-import { useConfig } from "./hooks/useConfig";
-import { useRecentFiles } from "./hooks/useRecentFiles";
-import { useDocuments } from "./hooks/useDocuments";
-import { useNativeMenu } from "./hooks/useNativeMenu";
-import { openNewWindow, consumeHandoff } from "./lib/windows";
+import { useMantineTheme } from '@mantine/core'
+import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import EditorScreen from './components/EditorScreen'
+import HomeScreen from './components/HomeScreen'
+import { useConfig } from './hooks/useConfig'
+import { useDocuments } from './hooks/useDocuments'
+import { useNativeMenu } from './hooks/useNativeMenu'
+import { useRecentFiles } from './hooks/useRecentFiles'
+import { consumeHandoff, openNewWindow } from './lib/windows'
 
 export default function App() {
-  const theme = useMantineTheme();
-  const [screen, setScreen] = useState("home");
-  const [aboutOpen, setAboutOpen] = useState(false);
+  const theme = useMantineTheme()
+  const [screen, setScreen] = useState('home')
+  const [aboutOpen, setAboutOpen] = useState(false)
 
-  const {
-    isDark,
-    live,
-    toggleTheme,
-    toggleLive,
-  } = useConfig();
+  const { isDark, live, toggleTheme, toggleLive } = useConfig()
 
-  const { recent, pushRecent, clearRecent } = useRecentFiles();
+  const { recent, pushRecent, clearRecent } = useRecentFiles()
 
-  const enterEditor = useCallback(() => setScreen("editor"), []);
-  const goHome = useCallback(() => setScreen("home"), []);
+  const enterEditor = useCallback(() => setScreen('editor'), [])
+  const goHome = useCallback(() => setScreen('home'), [])
 
   const {
     docs,
@@ -46,124 +40,124 @@ export default function App() {
     pushRecent,
     onEnterEditor: enterEditor,
     onEmpty: goHome,
-  });
+  })
 
   // Consume handoff from another window (tab detach / new window with doc)
   useEffect(() => {
-    const handoff = consumeHandoff();
+    const handoff = consumeHandoff()
     if (handoff) {
-      adoptDoc?.(handoff);
+      adoptDoc?.(handoff)
     }
-  }, [adoptDoc]);
+  }, [adoptDoc])
 
   // OS "Open With" / file associations
   useEffect(() => {
-    let unlisten = () => {};
-    (async () => {
+    let unlisten = () => {}
+    ;(async () => {
       try {
-        const cold = await invoke("get_opened_files");
-        if (Array.isArray(cold) && cold.length) await openPaths(cold);
+        const cold = await invoke('get_opened_files')
+        if (Array.isArray(cold) && cold.length) await openPaths(cold)
       } catch (_) {}
       try {
-        unlisten = await listen("med://open-files", (event) => {
-          const payload = event.payload;
-          if (Array.isArray(payload) && payload.length) openPaths(payload);
-        });
+        unlisten = await listen('med://open-files', (event) => {
+          const payload = event.payload
+          if (Array.isArray(payload) && payload.length) openPaths(payload)
+        })
       } catch (_) {}
-    })();
+    })()
     return () => {
       try {
-        unlisten();
+        unlisten()
       } catch (_) {}
-    };
-  }, [openPaths]);
+    }
+  }, [openPaths])
 
   const handleNewWindow = useCallback(async () => {
     try {
-      await openNewWindow(null);
+      await openNewWindow(null)
     } catch (e) {
-      console.warn("new window failed", e);
+      console.warn('new window failed', e)
     }
-  }, []);
+  }, [])
 
   const handleDetachTab = useCallback(
     async (id) => {
-      const doc = docs.find((d) => d.id === id);
-      if (!doc) return;
+      const doc = docs.find((d) => d.id === id)
+      if (!doc) return
       try {
         await openNewWindow({
           path: doc.path,
           title: doc.title,
           content: doc.content,
           dirty: doc.dirty,
-        });
-        await handleCloseTab(id, { force: true });
+        })
+        await handleCloseTab(id, { force: true })
       } catch (e) {
-        console.warn("detach tab failed", e);
+        console.warn('detach tab failed', e)
       }
     },
     [docs, handleCloseTab]
-  );
+  )
 
   // Ref to hold search functions from EditorScreen
-  const searchHandlersRef = useRef({});
+  const searchHandlersRef = useRef({})
 
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e) => {
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod) return;
-      const k = e.key.toLowerCase();
-      if (k === "o") {
-        e.preventDefault();
-        handleOpen();
-      } else if (k === "s") {
-        e.preventDefault();
-        if (e.shiftKey) handleSaveAs();
-        else handleSave();
-      } else if (k === "n") {
-        e.preventDefault();
-        if (e.shiftKey) handleNewWindow();
-        else handleNew();
-      } else if (k === "w") {
-        e.preventDefault();
-        if (activeId) handleCloseTab(activeId);
-      } else if (k === "l" && e.shiftKey) {
-        e.preventDefault();
-        toggleTheme();
-      } else if (k === "p" && e.shiftKey) {
-        e.preventDefault();
-        toggleLive();
-      } else if (k === "f") {
-        e.preventDefault();
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod) return
+      const k = e.key.toLowerCase()
+      if (k === 'o') {
+        e.preventDefault()
+        handleOpen()
+      } else if (k === 's') {
+        e.preventDefault()
+        if (e.shiftKey) handleSaveAs()
+        else handleSave()
+      } else if (k === 'n') {
+        e.preventDefault()
+        if (e.shiftKey) handleNewWindow()
+        else handleNew()
+      } else if (k === 'w') {
+        e.preventDefault()
+        if (activeId) handleCloseTab(activeId)
+      } else if (k === 'l' && e.shiftKey) {
+        e.preventDefault()
+        toggleTheme()
+      } else if (k === 'p' && e.shiftKey) {
+        e.preventDefault()
+        toggleLive()
+      } else if (k === 'f') {
+        e.preventDefault()
         if (e.shiftKey) {
-          searchHandlersRef.current.openSearchAll?.();
+          searchHandlersRef.current.openSearchAll?.()
         } else {
-          searchHandlersRef.current.openSearchCurrent?.();
+          searchHandlersRef.current.openSearchCurrent?.()
         }
-      } else if (k === "g") {
-        e.preventDefault();
+      } else if (k === 'g') {
+        e.preventDefault()
         if (e.shiftKey) {
-          searchHandlersRef.current.findPrev?.();
+          searchHandlersRef.current.findPrev?.()
         } else {
-          searchHandlersRef.current.findNext?.();
+          searchHandlersRef.current.findNext?.()
         }
-      } else if (k === "r") {
-        e.preventDefault();
+      } else if (k === 'r') {
+        e.preventDefault()
         if (e.shiftKey) {
-          if (searchHandlersRef.current.searchMode === "all") {
-            searchHandlersRef.current.replaceAllFiles?.();
+          if (searchHandlersRef.current.searchMode === 'all') {
+            searchHandlersRef.current.replaceAllFiles?.()
           } else {
-            searchHandlersRef.current.replaceAllCurrent?.();
+            searchHandlersRef.current.replaceAllCurrent?.()
           }
         } else {
-          searchHandlersRef.current.openSearchCurrent?.();
-          setTimeout(() => searchHandlersRef.current.focusReplaceInput?.(), 0);
+          searchHandlersRef.current.openSearchCurrent?.()
+          setTimeout(() => searchHandlersRef.current.focusReplaceInput?.(), 0)
         }
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [
     activeId,
     handleOpen,
@@ -174,10 +168,10 @@ export default function App() {
     handleCloseTab,
     toggleTheme,
     toggleLive,
-  ]);
+  ])
 
   // Native menu — handlers via ref so menu stays fresh
-  const handlersRef = useRef({});
+  const handlersRef = useRef({})
   handlersRef.current = {
     handleNew,
     handleOpen,
@@ -198,10 +192,10 @@ export default function App() {
     handleDetachTab,
     // Search handlers (populated by EditorScreen)
     ...searchHandlersRef.current,
-  };
-  useNativeMenu(handlersRef, recent);
+  }
+  useNativeMenu(handlersRef, recent)
 
-  if (screen === "home") {
+  if (screen === 'home') {
     return (
       <HomeScreen
         isDark={isDark}
@@ -214,7 +208,7 @@ export default function App() {
         aboutOpen={aboutOpen}
         setAboutOpen={setAboutOpen}
       />
-    );
+    )
   }
 
   return (
@@ -236,5 +230,5 @@ export default function App() {
       setAboutOpen={setAboutOpen}
       searchHandlersRef={searchHandlersRef}
     />
-  );
+  )
 }

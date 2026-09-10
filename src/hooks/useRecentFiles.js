@@ -1,33 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
-import { loadRecent, saveRecent, MAX_RECENT, normalizeRecentEntry } from "../lib/medStorage";
+import { useCallback, useEffect, useState } from 'react'
+import { loadRecent, MAX_RECENT, normalizeRecentEntry, saveRecent } from '../lib/medStorage'
 
 export function useRecentFiles() {
-  const [recent, setRecent] = useState([]);
+  const [recent, setRecent] = useState([])
 
   useEffect(() => {
-    loadRecent().then(setRecent);
-  }, []);
+    loadRecent().then(setRecent)
+  }, [])
 
   const pushRecent = useCallback(async (path) => {
-    if (!path) return;
+    if (!path) return
     setRecent((prev) => {
       const entry = normalizeRecentEntry({
         path,
         lastOpened: Date.now(),
-      });
-      const next = [
-        entry,
-        ...prev.filter((p) => p.path !== path),
-      ].slice(0, MAX_RECENT);
-      saveRecent(next);
-      return next;
-    });
-  }, []);
+      })
+      const next = [entry, ...prev.filter((p) => p.path !== path)].slice(0, MAX_RECENT)
+      saveRecent(next)
+      return next
+    })
+  }, [])
 
   const clearRecent = useCallback(async () => {
-    setRecent([]);
-    await saveRecent([]);
-  }, []);
+    setRecent([])
+    await saveRecent([])
+  }, [])
 
-  return { recent, pushRecent, clearRecent, setRecent };
+  return { recent, pushRecent, clearRecent, setRecent }
 }

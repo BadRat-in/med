@@ -1,25 +1,25 @@
-import { useEffect, useRef, useState } from "react";
 import {
-  Box,
   ActionIcon,
-  Text,
+  Box,
   Group,
-  TextInput,
   ScrollArea,
+  Text,
+  TextInput,
   Tooltip,
   UnstyledButton,
-} from "@mantine/core";
+} from '@mantine/core'
 import {
-  IconX,
-  IconSearch,
-  IconChevronUp,
+  IconArrowRight,
   IconChevronDown,
-  IconReplace,
+  IconChevronUp,
+  IconFileText,
   IconLetterCase,
   IconRegex,
-  IconFileText,
-  IconArrowRight,
-} from "@tabler/icons-react";
+  IconReplace,
+  IconSearch,
+  IconX,
+} from '@tabler/icons-react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Zed-style buffer search bar.
@@ -55,83 +55,83 @@ export default function SearchBar({
   isDark,
   replaceInputRef,
 }) {
-  const searchInputRef = useRef(null);
-  const [hoveredResult, setHoveredResult] = useState(null);
+  const searchInputRef = useRef(null)
+  const [hoveredResult, setHoveredResult] = useState(null)
 
   useEffect(() => {
     if (visible && searchInputRef.current) {
-      searchInputRef.current.focus();
-      searchInputRef.current.select();
+      searchInputRef.current.focus()
+      searchInputRef.current.select()
     }
-  }, [visible, searchMode]);
+  }, [visible])
 
   const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      onClose();
-      return;
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      onClose()
+      return
     }
 
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (searchMode === "current") {
-        if (e.shiftKey) onPrevious();
-        else onNext();
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (searchMode === 'current') {
+        if (e.shiftKey) onPrevious()
+        else onNext()
       }
-      return;
+      return
     }
 
     // ⌘R / Ctrl+R → replace one; ⇧⌘R → replace all
-    if (e.key === "r" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      if (e.shiftKey) onReplaceAll();
-      else onReplaceOne();
-      return;
+    if (e.key === 'r' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      if (e.shiftKey) onReplaceAll()
+      else onReplaceOne()
+      return
     }
 
     // ⌥⌘C → toggle case
-    if (e.key === "c" && (e.metaKey || e.ctrlKey) && e.altKey) {
-      e.preventDefault();
-      onCaseSensitiveToggle();
+    if (e.key === 'c' && (e.metaKey || e.ctrlKey) && e.altKey) {
+      e.preventDefault()
+      onCaseSensitiveToggle()
     }
-  };
+  }
 
   // Zed-ish colors
-  const bg = isDark ? "#1c1c1c" : "#f5f5f5";
-  const border = isDark ? "#2e2e2e" : "#e0e0e0";
-  const inputBg = isDark ? "#2a2a2a" : "#ffffff";
-  const text = isDark ? "#e4e4e4" : "#1a1a1a";
-  const muted = isDark ? "#8a8a8a" : "#6b6b6b";
-  const accent = "#f6821f";
-  const hoverBg = isDark ? "#2a2a2a" : "#ebebeb";
+  const bg = isDark ? '#1c1c1c' : '#f5f5f5'
+  const border = isDark ? '#2e2e2e' : '#e0e0e0'
+  const inputBg = isDark ? '#2a2a2a' : '#ffffff'
+  const text = isDark ? '#e4e4e4' : '#1a1a1a'
+  const muted = isDark ? '#8a8a8a' : '#6b6b6b'
+  const accent = '#f6821f'
+  const hoverBg = isDark ? '#2a2a2a' : '#ebebeb'
 
-  if (!visible) return null;
+  if (!visible) return null
 
   const matchLabel =
-    searchMode === "current"
+    searchMode === 'current'
       ? currentFileResultsCount > 0
         ? `${currentFileCurrentIndex + 1} of ${currentFileResultsCount}`
         : searchTerm
-        ? "No results"
-        : ""
+          ? 'No results'
+          : ''
       : totalAllMatches > 0
-      ? `${totalAllMatches} match${totalAllMatches === 1 ? "" : "es"} in ${
-          new Set(allResults.map((r) => r.doc.id)).size
-        } file${new Set(allResults.map((r) => r.doc.id)).size === 1 ? "" : "s"}`
-      : searchTerm
-      ? "No results"
-      : "";
+        ? `${totalAllMatches} match${totalAllMatches === 1 ? '' : 'es'} in ${
+            new Set(allResults.map((r) => r.doc.id)).size
+          } file${new Set(allResults.map((r) => r.doc.id)).size === 1 ? '' : 's'}`
+        : searchTerm
+          ? 'No results'
+          : ''
 
   // Group all-results by doc for a cleaner list
   const grouped =
-    searchMode === "all"
+    searchMode === 'all'
       ? allResults.reduce((acc, r) => {
-          const id = r.doc.id;
-          if (!acc[id]) acc[id] = { doc: r.doc, items: [] };
-          acc[id].items.push(r);
-          return acc;
+          const id = r.doc.id
+          if (!acc[id]) acc[id] = { doc: r.doc, items: [] }
+          acc[id].items.push(r)
+          return acc
         }, {})
-      : {};
+      : {}
 
   return (
     <Box
@@ -139,34 +139,26 @@ export default function SearchBar({
         flexShrink: 0,
         background: bg,
         borderBottom: `1px solid ${border}`,
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         zIndex: 50,
       }}
     >
       {/* ── Find row ─────────────────────────────────────────────── */}
-      <Group
-        gap={6}
-        wrap="nowrap"
-        px={10}
-        py={6}
-        style={{ alignItems: "center", minHeight: 40 }}
-      >
+      <Group gap={6} wrap="nowrap" px={10} py={6} style={{ alignItems: 'center', minHeight: 40 }}>
         {/* Mode indicator */}
         <Tooltip
           label={
-            searchMode === "current"
-              ? "Find in current file (⌘F)"
-              : "Find in open files (⇧⌘F)"
+            searchMode === 'current' ? 'Find in current file (⌘F)' : 'Find in open files (⇧⌘F)'
           }
           withArrow
           openDelay={400}
         >
           <Box
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               width: 28,
               height: 28,
               borderRadius: 4,
@@ -183,9 +175,7 @@ export default function SearchBar({
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={
-            searchMode === "current" ? "Find in file…" : "Find in open files…"
-          }
+          placeholder={searchMode === 'current' ? 'Find in file…' : 'Find in open files…'}
           size="xs"
           variant="unstyled"
           style={{ flex: 1, minWidth: 120 }}
@@ -195,12 +185,11 @@ export default function SearchBar({
               color: text,
               border: `1px solid ${border}`,
               borderRadius: 5,
-              padding: "4px 10px",
+              padding: '4px 10px',
               fontSize: 13,
               height: 28,
-              lineHeight: "20px",
-              fontFamily:
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              lineHeight: '20px',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             },
           }}
         />
@@ -210,16 +199,16 @@ export default function SearchBar({
           <Tooltip label="Match Case (⌥⌘C)" withArrow openDelay={400}>
             <ActionIcon
               size={26}
-              variant={caseSensitive ? "light" : "subtle"}
-              color={caseSensitive ? "orange" : "gray"}
+              variant={caseSensitive ? 'light' : 'subtle'}
+              color={caseSensitive ? 'orange' : 'gray'}
               onClick={onCaseSensitiveToggle}
               style={{
                 color: caseSensitive ? accent : muted,
                 background: caseSensitive
                   ? isDark
-                    ? "rgba(246,130,31,0.15)"
-                    : "rgba(246,130,31,0.12)"
-                  : "transparent",
+                    ? 'rgba(246,130,31,0.15)'
+                    : 'rgba(246,130,31,0.12)'
+                  : 'transparent',
               }}
             >
               <IconLetterCase size={14} stroke={1.75} />
@@ -246,11 +235,7 @@ export default function SearchBar({
               disabled
               style={{ color: muted, opacity: 0.45 }}
             >
-              <Text
-                size="xs"
-                fw={700}
-                style={{ fontSize: 11, letterSpacing: "-0.02em" }}
-              >
+              <Text size="xs" fw={700} style={{ fontSize: 11, letterSpacing: '-0.02em' }}>
                 W
               </Text>
             </ActionIcon>
@@ -262,18 +247,18 @@ export default function SearchBar({
           size="xs"
           style={{
             color: muted,
-            minWidth: searchMode === "current" ? 72 : 110,
-            textAlign: "right",
-            fontVariantNumeric: "tabular-nums",
+            minWidth: searchMode === 'current' ? 72 : 110,
+            textAlign: 'right',
+            fontVariantNumeric: 'tabular-nums',
             flexShrink: 0,
-            whiteSpace: "nowrap",
+            whiteSpace: 'nowrap',
           }}
         >
           {matchLabel}
         </Text>
 
         {/* Navigation (current file only) */}
-        {searchMode === "current" && (
+        {searchMode === 'current' && (
           <Group gap={1} wrap="nowrap" style={{ flexShrink: 0 }}>
             <Tooltip label="Previous (⇧↵)" withArrow openDelay={400}>
               <ActionIcon
@@ -303,23 +288,19 @@ export default function SearchBar({
         )}
 
         {/* Replace toggle */}
-        <Tooltip
-          label={replaceEnabled ? "Hide Replace" : "Show Replace"}
-          withArrow
-          openDelay={400}
-        >
+        <Tooltip label={replaceEnabled ? 'Hide Replace' : 'Show Replace'} withArrow openDelay={400}>
           <ActionIcon
             size={26}
-            variant={replaceEnabled ? "light" : "subtle"}
-            color={replaceEnabled ? "orange" : "gray"}
+            variant={replaceEnabled ? 'light' : 'subtle'}
+            color={replaceEnabled ? 'orange' : 'gray'}
             onClick={onToggleReplace}
             style={{
               color: replaceEnabled ? accent : muted,
               background: replaceEnabled
                 ? isDark
-                  ? "rgba(246,130,31,0.15)"
-                  : "rgba(246,130,31,0.12)"
-                : "transparent",
+                  ? 'rgba(246,130,31,0.15)'
+                  : 'rgba(246,130,31,0.12)'
+                : 'transparent',
               flexShrink: 0,
             }}
           >
@@ -328,7 +309,7 @@ export default function SearchBar({
         </Tooltip>
 
         {/* Switch mode */}
-        {searchMode === "current" ? (
+        {searchMode === 'current' ? (
           <Tooltip label="Find in Open Files (⇧⌘F)" withArrow openDelay={400}>
             <ActionIcon
               size={26}
@@ -371,13 +352,7 @@ export default function SearchBar({
 
       {/* ── Replace row ──────────────────────────────────────────── */}
       {replaceEnabled && (
-        <Group
-          gap={6}
-          wrap="nowrap"
-          px={10}
-          pb={6}
-          style={{ alignItems: "center", minHeight: 34 }}
-        >
+        <Group gap={6} wrap="nowrap" px={10} pb={6} style={{ alignItems: 'center', minHeight: 34 }}>
           {/* Spacer to align under search icon */}
           <Box style={{ width: 28, flexShrink: 0 }} />
 
@@ -396,12 +371,11 @@ export default function SearchBar({
                 color: text,
                 border: `1px solid ${border}`,
                 borderRadius: 5,
-                padding: "4px 10px",
+                padding: '4px 10px',
                 fontSize: 13,
                 height: 28,
-                lineHeight: "20px",
-                fontFamily:
-                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                lineHeight: '20px',
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
               },
             }}
           />
@@ -411,31 +385,25 @@ export default function SearchBar({
               <UnstyledButton
                 onClick={onReplaceOne}
                 disabled={
-                  searchMode === "current"
-                    ? currentFileResultsCount === 0
-                    : totalAllMatches === 0
+                  searchMode === 'current' ? currentFileResultsCount === 0 : totalAllMatches === 0
                 }
                 style={{
                   fontSize: 12,
                   fontWeight: 500,
                   color: muted,
-                  padding: "4px 10px",
+                  padding: '4px 10px',
                   borderRadius: 5,
                   border: `1px solid ${border}`,
-                  background: "transparent",
+                  background: 'transparent',
                   cursor:
-                    (searchMode === "current"
-                      ? currentFileResultsCount
-                      : totalAllMatches) === 0
-                      ? "not-allowed"
-                      : "pointer",
+                    (searchMode === 'current' ? currentFileResultsCount : totalAllMatches) === 0
+                      ? 'not-allowed'
+                      : 'pointer',
                   opacity:
-                    (searchMode === "current"
-                      ? currentFileResultsCount
-                      : totalAllMatches) === 0
+                    (searchMode === 'current' ? currentFileResultsCount : totalAllMatches) === 0
                       ? 0.45
                       : 1,
-                  whiteSpace: "nowrap",
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Replace
@@ -443,9 +411,9 @@ export default function SearchBar({
             </Tooltip>
             <Tooltip
               label={
-                searchMode === "current"
-                  ? "Replace All in File (⇧⌘R)"
-                  : "Replace All in Open Files (⇧⌘R)"
+                searchMode === 'current'
+                  ? 'Replace All in File (⇧⌘R)'
+                  : 'Replace All in Open Files (⇧⌘R)'
               }
               withArrow
               openDelay={400}
@@ -453,31 +421,25 @@ export default function SearchBar({
               <UnstyledButton
                 onClick={onReplaceAll}
                 disabled={
-                  searchMode === "current"
-                    ? currentFileResultsCount === 0
-                    : totalAllMatches === 0
+                  searchMode === 'current' ? currentFileResultsCount === 0 : totalAllMatches === 0
                 }
                 style={{
                   fontSize: 12,
                   fontWeight: 500,
-                  color: isDark ? "#fff" : "#1a1a1a",
-                  padding: "4px 10px",
+                  color: isDark ? '#fff' : '#1a1a1a',
+                  padding: '4px 10px',
                   borderRadius: 5,
                   border: `1px solid ${border}`,
-                  background: isDark ? "#333" : "#e8e8e8",
+                  background: isDark ? '#333' : '#e8e8e8',
                   cursor:
-                    (searchMode === "current"
-                      ? currentFileResultsCount
-                      : totalAllMatches) === 0
-                      ? "not-allowed"
-                      : "pointer",
+                    (searchMode === 'current' ? currentFileResultsCount : totalAllMatches) === 0
+                      ? 'not-allowed'
+                      : 'pointer',
                   opacity:
-                    (searchMode === "current"
-                      ? currentFileResultsCount
-                      : totalAllMatches) === 0
+                    (searchMode === 'current' ? currentFileResultsCount : totalAllMatches) === 0
                       ? 0.45
                       : 1,
-                  whiteSpace: "nowrap",
+                  whiteSpace: 'nowrap',
                 }}
               >
                 Replace All
@@ -488,19 +450,19 @@ export default function SearchBar({
       )}
 
       {/* ── All-files results list ───────────────────────────────── */}
-      {searchMode === "all" && searchTerm.trim() && (
+      {searchMode === 'all' && searchTerm.trim() && (
         <Box
           style={{
             borderTop: `1px solid ${border}`,
             maxHeight: 280,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           <ScrollArea style={{ flex: 1 }} offsetScrollbars type="auto">
             {Object.keys(grouped).length === 0 ? (
-              <Box py={20} style={{ textAlign: "center" }}>
+              <Box py={20} style={{ textAlign: 'center' }}>
                 <Text size="sm" c="dimmed">
                   No matches in open files
                 </Text>
@@ -516,24 +478,20 @@ export default function SearchBar({
                       py={4}
                       wrap="nowrap"
                       style={{
-                        position: "sticky",
+                        position: 'sticky',
                         top: 0,
                         background: bg,
                         zIndex: 1,
                       }}
                     >
-                      <IconFileText
-                        size={13}
-                        color={accent}
-                        style={{ flexShrink: 0 }}
-                      />
+                      <IconFileText size={13} color={accent} style={{ flexShrink: 0 }} />
                       <Text
                         size="xs"
                         fw={600}
                         style={{ color: text, flex: 1, minWidth: 0 }}
                         lineClamp={1}
                       >
-                        {doc.title || "Untitled"}
+                        {doc.title || 'Untitled'}
                       </Text>
                       <Text size="xs" style={{ color: muted, flexShrink: 0 }}>
                         {items.length}
@@ -541,36 +499,30 @@ export default function SearchBar({
                     </Group>
 
                     {items.map((result) => {
-                      const key = `${result.doc.id}-${result.matchIndex}`;
-                      const isHovered = hoveredResult === key;
+                      const key = `${result.doc.id}-${result.matchIndex}`
+                      const isHovered = hoveredResult === key
                       return (
                         <UnstyledButton
                           key={key}
-                          onClick={() =>
-                            onJumpToResult(result.doc.id, result.matchIndex)
-                          }
+                          onClick={() => onJumpToResult(result.doc.id, result.matchIndex)}
                           onMouseEnter={() => setHoveredResult(key)}
                           onMouseLeave={() => setHoveredResult(null)}
                           style={{
-                            display: "block",
-                            width: "100%",
-                            padding: "5px 12px 5px 32px",
-                            background: isHovered ? hoverBg : "transparent",
-                            border: "none",
-                            textAlign: "left",
-                            cursor: "pointer",
+                            display: 'block',
+                            width: '100%',
+                            padding: '5px 12px 5px 32px',
+                            background: isHovered ? hoverBg : 'transparent',
+                            border: 'none',
+                            textAlign: 'left',
+                            cursor: 'pointer',
                           }}
                         >
-                          <Group
-                            gap={8}
-                            wrap="nowrap"
-                            style={{ alignItems: "baseline" }}
-                          >
+                          <Group gap={8} wrap="nowrap" style={{ alignItems: 'baseline' }}>
                             <Text
                               size="xs"
                               style={{
                                 color: muted,
-                                fontVariantNumeric: "tabular-nums",
+                                fontVariantNumeric: 'tabular-nums',
                                 minWidth: 36,
                                 flexShrink: 0,
                               }}
@@ -582,19 +534,19 @@ export default function SearchBar({
                               style={{
                                 color: text,
                                 fontFamily:
-                                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                                 flex: 1,
                                 minWidth: 0,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
                               }}
                             >
                               {result.snippet}
                             </Text>
                           </Group>
                         </UnstyledButton>
-                      );
+                      )
                     })}
                   </Box>
                 ))}
@@ -604,5 +556,5 @@ export default function SearchBar({
         </Box>
       )}
     </Box>
-  );
+  )
 }

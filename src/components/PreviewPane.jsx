@@ -1,20 +1,25 @@
-import { Box, ScrollArea, useMantineTheme } from "@mantine/core";
+import { Box, ScrollArea, useMantineTheme } from '@mantine/core'
 
 export default function PreviewPane({ html, previewRef, viewportRef, isDark, border, bg }) {
-  const theme = useMantineTheme();
-  const codeBg = isDark ? theme.other.codeDark : theme.other.codeLight;
-  const text = isDark ? "#e8e8e8" : "#1a1a1a";
-  const muted = isDark ? "#a0a0a0" : "#666666";
+  const theme = useMantineTheme()
+  const codeBg = isDark ? theme.other.codeDark : theme.other.codeLight
+  const text = isDark ? '#e8e8e8' : '#1a1a1a'
+  const muted = isDark ? '#a0a0a0' : '#666666'
 
   return (
     <>
-      <ScrollArea style={{ flex: 1, background: bg, minWidth: 0, height: "100%" }} type="auto" viewportRef={viewportRef}>
+      <ScrollArea
+        style={{ flex: 1, background: bg, minWidth: 0, height: '100%' }}
+        type="auto"
+        viewportRef={viewportRef}
+      >
         <Box
           ref={previewRef}
-          className={`markdown-body ${isDark ? "md-dark" : "md-light"}`}
+          className={`markdown-body ${isDark ? 'md-dark' : 'md-light'}`}
           px="lg"
           py="md"
           maw={900}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Required for markdown preview rendering
           dangerouslySetInnerHTML={{ __html: html }}
           style={{
             color: text,
@@ -123,7 +128,7 @@ export default function PreviewPane({ html, previewRef, viewportRef, isDark, bor
           background: linear-gradient(
             90deg,
             ${codeBg} 0%,
-            ${isDark ? "#3a3a3a" : "#dedede"} 50%,
+            ${isDark ? '#3a3a3a' : '#dedede'} 50%,
             ${codeBg} 100%
           );
           background-size: 200% 100%;
@@ -160,5 +165,5 @@ export default function PreviewPane({ html, previewRef, viewportRef, isDark, bor
         }
       `}</style>
     </>
-  );
+  )
 }

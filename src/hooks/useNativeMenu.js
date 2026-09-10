@@ -1,262 +1,258 @@
-import { useEffect } from "react";
-import {
-  Menu as TauriMenu,
-  MenuItem,
-  Submenu,
-  PredefinedMenuItem,
-} from "@tauri-apps/api/menu";
-import { basename } from "../lib/paths";
-import { openExternalUrl } from "../lib/windows";
+import { MenuItem, PredefinedMenuItem, Submenu, Menu as TauriMenu } from '@tauri-apps/api/menu'
+import { useEffect } from 'react'
+import { basename } from '../lib/paths'
+import { openExternalUrl } from '../lib/windows'
 
-const GITHUB = "https://github.com/BadRat-in/med";
-const ISSUES = `${GITHUB}/issues`;
-const PRS = `${GITHUB}/pulls`;
+const GITHUB = 'https://github.com/BadRat-in/med'
+const ISSUES = `${GITHUB}/issues`
+const PRS = `${GITHUB}/pulls`
 
 /**
  * Builds the native app menu. Actions are read from handlersRef.current
  * so the menu never holds stale closures.
  */
-export function useNativeMenu(handlersRef, recent) {
+export function useNativeMenu(handlersRef, _recent) {
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
 
-    (async () => {
+    ;(async () => {
       try {
-        const h = () => handlersRef.current;
+        const h = () => handlersRef.current
 
-        const recentItems =
-          !(h().recent || []).length
-            ? [
-                await MenuItem.new({
-                  id: "recent-empty",
-                  text: "No Recent Files",
-                  enabled: false,
-                }),
-              ]
-            : [
-                ...(await Promise.all(
-                  h().recent.slice(0, 10).map(async (item, i) => {
-                    const path = typeof item === "string" ? item : item.path;
+        const recentItems = !(h().recent || []).length
+          ? [
+              await MenuItem.new({
+                id: 'recent-empty',
+                text: 'No Recent Files',
+                enabled: false,
+              }),
+            ]
+          : [
+              ...(await Promise.all(
+                h()
+                  .recent.slice(0, 10)
+                  .map(async (item, i) => {
+                    const path = typeof item === 'string' ? item : item.path
                     return MenuItem.new({
                       id: `recent-${i}`,
                       text: basename(path),
                       action: () => h().handleOpenRecent(path),
-                    });
+                    })
                   })
-                )),
-                await PredefinedMenuItem.new({ item: "Separator" }),
-                await MenuItem.new({
-                  id: "clear-recent",
-                  text: "Clear Recent",
-                  action: () => h().clearRecent(),
-                }),
-              ];
+              )),
+              await PredefinedMenuItem.new({ item: 'Separator' }),
+              await MenuItem.new({
+                id: 'clear-recent',
+                text: 'Clear Recent',
+                action: () => h().clearRecent(),
+              }),
+            ]
 
         // —— MED (app) ——
         const appSub = await Submenu.new({
-          text: "MED",
+          text: 'MED',
           items: [
             await MenuItem.new({
-              id: "about",
-              text: "About MED",
+              id: 'about',
+              text: 'About MED',
               action: () => h().setAboutOpen(true),
             }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
-            await PredefinedMenuItem.new({ item: "Hide" }),
-            await PredefinedMenuItem.new({ item: "HideOthers" }),
-            await PredefinedMenuItem.new({ item: "ShowAll" }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
-            await PredefinedMenuItem.new({ item: "Quit" }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
+            await PredefinedMenuItem.new({ item: 'Hide' }),
+            await PredefinedMenuItem.new({ item: 'HideOthers' }),
+            await PredefinedMenuItem.new({ item: 'ShowAll' }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
+            await PredefinedMenuItem.new({ item: 'Quit' }),
           ],
-        });
+        })
 
         // —— File ——
         const fileSub = await Submenu.new({
-          text: "File",
+          text: 'File',
           items: [
             // Create
             await MenuItem.new({
-              id: "new",
-              text: "New",
-              accelerator: "CmdOrCtrl+N",
+              id: 'new',
+              text: 'New',
+              accelerator: 'CmdOrCtrl+N',
               action: () => h().handleNew(),
             }),
             await MenuItem.new({
-              id: "new-window",
-              text: "New Window",
-              accelerator: "CmdOrCtrl+Shift+N",
+              id: 'new-window',
+              text: 'New Window',
+              accelerator: 'CmdOrCtrl+Shift+N',
               action: () => h().handleNewWindow?.(),
             }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
             // Open
             await MenuItem.new({
-              id: "open",
-              text: "Open…",
-              accelerator: "CmdOrCtrl+O",
+              id: 'open',
+              text: 'Open…',
+              accelerator: 'CmdOrCtrl+O',
               action: () => h().handleOpen(),
             }),
-            await Submenu.new({ text: "Open Recent", items: recentItems }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
+            await Submenu.new({ text: 'Open Recent', items: recentItems }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
             // Save
             await MenuItem.new({
-              id: "save",
-              text: "Save",
-              accelerator: "CmdOrCtrl+S",
+              id: 'save',
+              text: 'Save',
+              accelerator: 'CmdOrCtrl+S',
               action: () => h().handleSave(),
             }),
             await MenuItem.new({
-              id: "save-as",
-              text: "Save As…",
-              accelerator: "CmdOrCtrl+Shift+S",
+              id: 'save-as',
+              text: 'Save As…',
+              accelerator: 'CmdOrCtrl+Shift+S',
               action: () => h().handleSaveAs(),
             }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
             // Close / navigate
             await MenuItem.new({
-              id: "close-tab",
-              text: "Close Tab",
-              accelerator: "CmdOrCtrl+W",
+              id: 'close-tab',
+              text: 'Close Tab',
+              accelerator: 'CmdOrCtrl+W',
               action: () => {
-                if (h().activeId) h().handleCloseTab(h().activeId);
+                if (h().activeId) h().handleCloseTab(h().activeId)
               },
             }),
             await MenuItem.new({
-              id: "move-to-new-window",
-              text: "Move Tab to New Window",
+              id: 'move-to-new-window',
+              text: 'Move Tab to New Window',
               action: () => {
-                if (h().activeId) h().handleDetachTab?.(h().activeId);
+                if (h().activeId) h().handleDetachTab?.(h().activeId)
               },
             }),
             await MenuItem.new({
-              id: "home",
-              text: "Home",
+              id: 'home',
+              text: 'Home',
               action: () => h().handleGoHome(),
             }),
           ],
-        });
+        })
 
         // —— Edit ——
         const editSub = await Submenu.new({
-          text: "Edit",
+          text: 'Edit',
           items: [
-            await PredefinedMenuItem.new({ item: "Undo" }),
-            await PredefinedMenuItem.new({ item: "Redo" }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
-            await PredefinedMenuItem.new({ item: "Cut" }),
-            await PredefinedMenuItem.new({ item: "Copy" }),
-            await PredefinedMenuItem.new({ item: "Paste" }),
-            await PredefinedMenuItem.new({ item: "SelectAll" }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
+            await PredefinedMenuItem.new({ item: 'Undo' }),
+            await PredefinedMenuItem.new({ item: 'Redo' }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
+            await PredefinedMenuItem.new({ item: 'Cut' }),
+            await PredefinedMenuItem.new({ item: 'Copy' }),
+            await PredefinedMenuItem.new({ item: 'Paste' }),
+            await PredefinedMenuItem.new({ item: 'SelectAll' }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
             // Find submenu
             await Submenu.new({
-              text: "Find",
+              text: 'Find',
               items: [
                 await MenuItem.new({
-                  id: "find",
-                  text: "Find…",
-                  accelerator: "CmdOrCtrl+F",
+                  id: 'find',
+                  text: 'Find…',
+                  accelerator: 'CmdOrCtrl+F',
                   action: () => h().openSearchCurrent?.(),
                 }),
                 await MenuItem.new({
-                  id: "find-in-files",
-                  text: "Find in Files…",
-                  accelerator: "CmdOrCtrl+Shift+F",
+                  id: 'find-in-files',
+                  text: 'Find in Files…',
+                  accelerator: 'CmdOrCtrl+Shift+F',
                   action: () => h().openSearchAll?.(),
                 }),
-                await PredefinedMenuItem.new({ item: "Separator" }),
+                await PredefinedMenuItem.new({ item: 'Separator' }),
                 await MenuItem.new({
-                  id: "replace",
-                  text: "Replace…",
-                  accelerator: "CmdOrCtrl+R",
+                  id: 'replace',
+                  text: 'Replace…',
+                  accelerator: 'CmdOrCtrl+R',
                   action: () => {
-                    h().openSearchCurrent?.();
+                    h().openSearchCurrent?.()
                     // Focus replace input after opening
-                    setTimeout(() => h().focusReplaceInput?.(), 0);
+                    setTimeout(() => h().focusReplaceInput?.(), 0)
                   },
                 }),
                 await MenuItem.new({
-                  id: "replace-all",
-                  text: "Replace All",
-                  accelerator: "CmdOrCtrl+Shift+R",
+                  id: 'replace-all',
+                  text: 'Replace All',
+                  accelerator: 'CmdOrCtrl+Shift+R',
                   action: () => {
-                    if (h().searchMode === "all") {
-                      h().replaceAllFiles?.();
+                    if (h().searchMode === 'all') {
+                      h().replaceAllFiles?.()
                     } else {
-                      h().replaceAllCurrent?.();
+                      h().replaceAllCurrent?.()
                     }
                   },
                 }),
-                await PredefinedMenuItem.new({ item: "Separator" }),
+                await PredefinedMenuItem.new({ item: 'Separator' }),
                 await MenuItem.new({
-                  id: "next-match",
-                  text: "Next Match",
-                  accelerator: "CmdOrCtrl+G",
+                  id: 'next-match',
+                  text: 'Next Match',
+                  accelerator: 'CmdOrCtrl+G',
                   action: () => h().findNext?.(),
                 }),
                 await MenuItem.new({
-                  id: "prev-match",
-                  text: "Previous Match",
-                  accelerator: "CmdOrCtrl+Shift+G",
+                  id: 'prev-match',
+                  text: 'Previous Match',
+                  accelerator: 'CmdOrCtrl+Shift+G',
                   action: () => h().findPrev?.(),
                 }),
               ],
             }),
           ],
-        });
+        })
 
         // —— View ——
         const viewSub = await Submenu.new({
-          text: "View",
+          text: 'View',
           items: [
             await MenuItem.new({
-              id: "toggle-theme",
-              text: "Toggle Light / Dark",
-              accelerator: "CmdOrCtrl+Shift+L",
+              id: 'toggle-theme',
+              text: 'Toggle Light / Dark',
+              accelerator: 'CmdOrCtrl+Shift+L',
               action: () => h().toggleTheme(),
             }),
             await MenuItem.new({
-              id: "toggle-live",
-              text: "Toggle Live Preview",
-              accelerator: "CmdOrCtrl+Shift+P",
+              id: 'toggle-live',
+              text: 'Toggle Live Preview',
+              accelerator: 'CmdOrCtrl+Shift+P',
               action: () => h().toggleLive(),
             }),
           ],
-        });
+        })
 
         // —— Help ——
         const helpSub = await Submenu.new({
-          text: "Help",
+          text: 'Help',
           items: [
             await MenuItem.new({
-              id: "github",
-              text: "GitHub Repository",
+              id: 'github',
+              text: 'GitHub Repository',
               action: () => openExternalUrl(GITHUB),
             }),
-            await PredefinedMenuItem.new({ item: "Separator" }),
+            await PredefinedMenuItem.new({ item: 'Separator' }),
             await MenuItem.new({
-              id: "issues",
-              text: "Issues",
+              id: 'issues',
+              text: 'Issues',
               action: () => openExternalUrl(ISSUES),
             }),
             await MenuItem.new({
-              id: "prs",
-              text: "Pull Requests",
+              id: 'prs',
+              text: 'Pull Requests',
               action: () => openExternalUrl(PRS),
             }),
           ],
-        });
+        })
 
         const menu = await TauriMenu.new({
           items: [appSub, fileSub, editSub, viewSub, helpSub],
-        });
-        if (!cancelled) await menu.setAsAppMenu();
+        })
+        if (!cancelled) await menu.setAsAppMenu()
       } catch (e) {
-        console.warn("Native menu setup failed", e);
+        console.warn('Native menu setup failed', e)
       }
-    })();
+    })()
 
     return () => {
-      cancelled = true;
-    };
-  }, [handlersRef, recent]);
+      cancelled = true
+    }
+  }, [handlersRef])
 }
