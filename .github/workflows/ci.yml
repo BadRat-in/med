@@ -2,20 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build MED (macOS)
+  check:
+    name: Build and Check
     runs-on: macos-latest
 
     steps:
@@ -25,13 +18,12 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: pnpm
+          node-version: 24
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -46,18 +38,5 @@ jobs:
         working-directory: src-tauri
         run: cargo check
 
-      - name: Build unsigned macOS bundles
+      - name: Build Tauri
         run: pnpm tauri build
-        env:
-          CI: true
-
-      - name: Upload build artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: med-macos-build
-          if-no-files-found: error
-          path: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app
-          retention-days: 7
