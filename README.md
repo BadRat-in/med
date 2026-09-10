@@ -1,7 +1,7 @@
 # MED — Markdown Editor
 
-[![CI](https://github.com/RKInnovate/med/actions/workflows/ci.yml/badge.svg)](https://github.com/RKInnovate/med/actions/workflows/ci.yml)
-[![Release](https://github.com/RKInnovate/med/actions/workflows/release.yml/badge.svg)](https://github.com/RKInnovate/med/actions/workflows/release.yml)
+[![CI](https://github.com/BadRat-in/med/actions/workflows/ci.yml/badge.svg)](https://github.com/BadRat-in/med/actions/workflows/ci.yml)
+[![Release](https://github.com/BadRat-in/med/actions/workflows/release.yml/badge.svg)](https://github.com/BadRat-in/med/actions/workflows/release.yml)
 ![Platform](https://img.shields.io/badge/platform-macOS-black?logo=apple&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-stable-1E2650?logo=rust&logoColor=white)
 ![Tauri](https://img.shields.io/badge/Tauri-v2-24C8DB?logo=tauri&logoColor=white)
