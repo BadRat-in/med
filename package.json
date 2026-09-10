@@ -12,6 +12,7 @@
   "dependencies": {
     "@mantine/core": "^9.6.0",
     "@mantine/hooks": "^9.6.0",
+    "@tabler/icons-react": "^3.46.0",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
@@ -23,6 +24,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.12",
     "@tauri-apps/cli": "^2.0.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
@@ -32,5 +34,5 @@
     "postcss-simple-vars": "^7.0.1",
     "vite": "^8.2.2"
   },
-  "packageManager": "pnpm@11.25.0"
+  "packageManager": "pnpm@12.3.4"
 }
