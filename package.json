@@ -10,22 +10,22 @@
     "tauri": "set -a && source .env && set +a && tauri"
   },
   "dependencies": {
-    "@mantine/core": "^7.13.0",
-    "@mantine/hooks": "^7.13.0",
+    "@mantine/core": "^9.6.0",
+    "@mantine/hooks": "^9.6.0",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-opener": "^2.5.5",
     "highlight.js": "^11.10.0",
-    "marked": "^14.1.0",
+    "marked": "^18.0.11",
     "mermaid": "^11.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^4.3.1",
     "postcss": "^8.4.41",
     "postcss-preset-mantine": "^1.17.0",
