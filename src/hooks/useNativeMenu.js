@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import {
   Menu as TauriMenu,
   MenuItem,
@@ -6,6 +6,11 @@ import {
   PredefinedMenuItem,
 } from "@tauri-apps/api/menu";
 import { basename } from "../lib/paths";
+import { openExternalUrl } from "../lib/windows";
+
+const GITHUB = "https://github.com/BadRat-in/med";
+const ISSUES = `${GITHUB}/issues`;
+const PRS = `${GITHUB}/pulls`;
 
 /**
  * Builds the native app menu. Actions are read from handlersRef.current
@@ -47,6 +52,7 @@ export function useNativeMenu(handlersRef, recent) {
                 }),
               ];
 
+        // —— MED (app) ——
         const appSub = await Submenu.new({
           text: "MED",
           items: [
@@ -64,15 +70,25 @@ export function useNativeMenu(handlersRef, recent) {
           ],
         });
 
+        // —— File ——
         const fileSub = await Submenu.new({
           text: "File",
           items: [
+            // Create
             await MenuItem.new({
               id: "new",
               text: "New",
               accelerator: "CmdOrCtrl+N",
               action: () => h().handleNew(),
             }),
+            await MenuItem.new({
+              id: "new-window",
+              text: "New Window",
+              accelerator: "CmdOrCtrl+Shift+N",
+              action: () => h().handleNewWindow?.(),
+            }),
+            await PredefinedMenuItem.new({ item: "Separator" }),
+            // Open
             await MenuItem.new({
               id: "open",
               text: "Open…",
@@ -81,6 +97,7 @@ export function useNativeMenu(handlersRef, recent) {
             }),
             await Submenu.new({ text: "Open Recent", items: recentItems }),
             await PredefinedMenuItem.new({ item: "Separator" }),
+            // Save
             await MenuItem.new({
               id: "save",
               text: "Save",
@@ -94,12 +111,20 @@ export function useNativeMenu(handlersRef, recent) {
               action: () => h().handleSaveAs(),
             }),
             await PredefinedMenuItem.new({ item: "Separator" }),
+            // Close / navigate
             await MenuItem.new({
               id: "close-tab",
               text: "Close Tab",
               accelerator: "CmdOrCtrl+W",
               action: () => {
                 if (h().activeId) h().handleCloseTab(h().activeId);
+              },
+            }),
+            await MenuItem.new({
+              id: "move-to-new-window",
+              text: "Move Tab to New Window",
+              action: () => {
+                if (h().activeId) h().handleDetachTab?.(h().activeId);
               },
             }),
             await MenuItem.new({
@@ -110,6 +135,7 @@ export function useNativeMenu(handlersRef, recent) {
           ],
         });
 
+        // —— Edit ——
         const editSub = await Submenu.new({
           text: "Edit",
           items: [
@@ -123,6 +149,7 @@ export function useNativeMenu(handlersRef, recent) {
           ],
         });
 
+        // —— View ——
         const viewSub = await Submenu.new({
           text: "View",
           items: [
@@ -141,8 +168,31 @@ export function useNativeMenu(handlersRef, recent) {
           ],
         });
 
+        // —— Help ——
+        const helpSub = await Submenu.new({
+          text: "Help",
+          items: [
+            await MenuItem.new({
+              id: "github",
+              text: "GitHub Repository",
+              action: () => openExternalUrl(GITHUB),
+            }),
+            await PredefinedMenuItem.new({ item: "Separator" }),
+            await MenuItem.new({
+              id: "issues",
+              text: "Issues",
+              action: () => openExternalUrl(ISSUES),
+            }),
+            await MenuItem.new({
+              id: "prs",
+              text: "Pull Requests",
+              action: () => openExternalUrl(PRS),
+            }),
+          ],
+        });
+
         const menu = await TauriMenu.new({
-          items: [appSub, fileSub, editSub, viewSub],
+          items: [appSub, fileSub, editSub, viewSub, helpSub],
         });
         if (!cancelled) await menu.setAsAppMenu();
       } catch (e) {

@@ -7,6 +7,8 @@
     "core:default",
     "core:event:default",
     "core:path:default",
+    "core:webview:default",
+    "core:webview:allow-create-webview-window",
     "dialog:default",
     "fs:default",
     "fs:allow-read-text-file",

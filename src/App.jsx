@@ -9,6 +9,7 @@ import { useConfig } from "./hooks/useConfig";
 import { useRecentFiles } from "./hooks/useRecentFiles";
 import { useDocuments } from "./hooks/useDocuments";
 import { useNativeMenu } from "./hooks/useNativeMenu";
+import { openNewWindow, consumeHandoff } from "./lib/windows";
 
 export default function App() {
   const theme = useMantineTheme();
@@ -40,11 +41,20 @@ export default function App() {
     handleSave,
     handleSaveAs,
     handleCloseTab,
+    adoptDoc,
   } = useDocuments({
     pushRecent,
     onEnterEditor: enterEditor,
     onEmpty: goHome,
   });
+
+  // Consume handoff from another window (tab detach / new window with doc)
+  useEffect(() => {
+    const handoff = consumeHandoff();
+    if (handoff) {
+      adoptDoc?.(handoff);
+    }
+  }, [adoptDoc]);
 
   // OS "Open With" / file associations
   useEffect(() => {
@@ -68,6 +78,34 @@ export default function App() {
     };
   }, [openPaths]);
 
+  const handleNewWindow = useCallback(async () => {
+    try {
+      await openNewWindow(null);
+    } catch (e) {
+      console.warn("new window failed", e);
+    }
+  }, []);
+
+  const handleDetachTab = useCallback(
+    async (id) => {
+      const doc = docs.find((d) => d.id === id);
+      if (!doc) return;
+      try {
+        await openNewWindow({
+          path: doc.path,
+          title: doc.title,
+          content: doc.content,
+          dirty: doc.dirty,
+        });
+        // Close without dirty prompt — content moved to the other window
+        await handleCloseTab(id, { force: true });
+      } catch (e) {
+        console.warn("detach tab failed", e);
+      }
+    },
+    [docs, handleCloseTab]
+  );
+
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e) => {
@@ -83,7 +121,8 @@ export default function App() {
         else handleSave();
       } else if (k === "n") {
         e.preventDefault();
-        handleNew();
+        if (e.shiftKey) handleNewWindow();
+        else handleNew();
       } else if (k === "w") {
         e.preventDefault();
         if (activeId) handleCloseTab(activeId);
@@ -103,6 +142,7 @@ export default function App() {
     handleSave,
     handleSaveAs,
     handleNew,
+    handleNewWindow,
     handleCloseTab,
     toggleTheme,
     toggleLive,
@@ -126,6 +166,8 @@ export default function App() {
     live,
     activeId,
     recent,
+    handleNewWindow,
+    handleDetachTab,
   };
   useNativeMenu(handlersRef, recent);
 
@@ -154,6 +196,10 @@ export default function App() {
       setContent={setContent}
       handleCloseTab={handleCloseTab}
       handleNew={handleNew}
+      handleOpenRecent={handleOpenRecent}
+      handleClearRecent={clearRecent}
+      handleDetachTab={handleDetachTab}
+      recent={recent}
       isDark={isDark}
       live={live}
       aboutOpen={aboutOpen}

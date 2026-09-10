@@ -95,18 +95,29 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
     [pushRecent, onEnterEditor]
   );
 
-  // Restore previous session once on mount
+  // Restore previous session once on mount — only the primary "main" window
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const session = await loadSession();
-        if (cancelled) return;
-        if (session.paths?.length) {
-          await openPaths(session.paths, {
-            activePath: session.activePath,
-            activate: true,
-          });
+        let isMain = true;
+        try {
+          const { getCurrentWebviewWindow } = await import(
+            "@tauri-apps/api/webviewWindow"
+          );
+          const cur = getCurrentWebviewWindow();
+          isMain = !cur?.label || cur.label === "main";
+        } catch (_) {}
+        // Secondary windows start empty (or take handoff); don't clobber with session
+        if (isMain) {
+          const session = await loadSession();
+          if (cancelled) return;
+          if (session.paths?.length) {
+            await openPaths(session.paths, {
+              activePath: session.activePath,
+              activate: true,
+            });
+          }
         }
       } catch (e) {
         console.warn("session restore failed", e);
@@ -123,12 +134,26 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist open file paths whenever tabs change
+  // Persist open file paths whenever tabs change (main window only)
   useEffect(() => {
     if (!sessionReady || skipNextSave.current) return;
-    const paths = docs.map((d) => d.path).filter(Boolean);
-    const activePath = docs.find((d) => d.id === activeId)?.path || null;
-    saveSession({ paths, activePath });
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getCurrentWebviewWindow } = await import(
+          "@tauri-apps/api/webviewWindow"
+        );
+        const cur = getCurrentWebviewWindow();
+        if (cur?.label && cur.label !== "main") return;
+      } catch (_) {}
+      if (cancelled) return;
+      const paths = docs.map((d) => d.path).filter(Boolean);
+      const activePath = docs.find((d) => d.id === activeId)?.path || null;
+      saveSession({ paths, activePath });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [docs, activeId, sessionReady]);
 
   const handleOpen = useCallback(async () => {
@@ -189,9 +214,10 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
   const handleCloseTab = useCallback(
     async (id, e) => {
       e?.stopPropagation?.();
+      const force = e?.force === true;
       const doc = docs.find((d) => d.id === id);
       if (!doc) return;
-      if (doc.dirty) {
+      if (doc.dirty && !force) {
         const yes = await ask(
           `"${doc.title}" has unsaved changes. Close without saving?`,
           { title: "MED", kind: "warning" }
@@ -217,6 +243,34 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
     [docs, activeId, onEmpty]
   );
 
+  /** Adopt a doc snapshot from another window (tab detach / handoff). */
+  const adoptDoc = useCallback(
+    (snapshot) => {
+      if (!snapshot) return;
+      const doc = newDoc({
+        path: snapshot.path || null,
+        title: snapshot.title || (snapshot.path ? basename(snapshot.path) : "Untitled"),
+        content: snapshot.content ?? "",
+        dirty: !!snapshot.dirty,
+      });
+      let focusId = doc.id;
+      setDocs((prev) => {
+        if (doc.path) {
+          const existing = prev.find((d) => d.path === doc.path);
+          if (existing) {
+            focusId = existing.id;
+            return prev;
+          }
+        }
+        return [...prev, doc];
+      });
+      setActiveId(focusId);
+      onEnterEditor?.();
+      if (doc.path) pushRecent?.(doc.path);
+    },
+    [onEnterEditor, pushRecent]
+  );
+
   return {
     docs,
     activeId,
@@ -232,6 +286,7 @@ export function useDocuments({ pushRecent, onEnterEditor, onEmpty }) {
     handleSave,
     handleSaveAs,
     handleCloseTab,
+    adoptDoc,
     sessionReady,
   };
 }
