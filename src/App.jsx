@@ -97,7 +97,6 @@ export default function App() {
           content: doc.content,
           dirty: doc.dirty,
         });
-        // Close without dirty prompt — content moved to the other window
         await handleCloseTab(id, { force: true });
       } catch (e) {
         console.warn("detach tab failed", e);
@@ -105,6 +104,9 @@ export default function App() {
     },
     [docs, handleCloseTab]
   );
+
+  // Ref to hold search functions from EditorScreen
+  const searchHandlersRef = useRef({});
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -132,6 +134,32 @@ export default function App() {
       } else if (k === "p" && e.shiftKey) {
         e.preventDefault();
         toggleLive();
+      } else if (k === "f") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          searchHandlersRef.current.openSearchAll?.();
+        } else {
+          searchHandlersRef.current.openSearchCurrent?.();
+        }
+      } else if (k === "g") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          searchHandlersRef.current.findPrev?.();
+        } else {
+          searchHandlersRef.current.findNext?.();
+        }
+      } else if (k === "r") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (searchHandlersRef.current.searchMode === "all") {
+            searchHandlersRef.current.replaceAllFiles?.();
+          } else {
+            searchHandlersRef.current.replaceAllCurrent?.();
+          }
+        } else {
+          searchHandlersRef.current.openSearchCurrent?.();
+          setTimeout(() => searchHandlersRef.current.focusReplaceInput?.(), 0);
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -168,6 +196,8 @@ export default function App() {
     recent,
     handleNewWindow,
     handleDetachTab,
+    // Search handlers (populated by EditorScreen)
+    ...searchHandlersRef.current,
   };
   useNativeMenu(handlersRef, recent);
 
@@ -204,6 +234,7 @@ export default function App() {
       live={live}
       aboutOpen={aboutOpen}
       setAboutOpen={setAboutOpen}
+      searchHandlersRef={searchHandlersRef}
     />
   );
 }
