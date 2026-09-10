@@ -146,6 +146,61 @@ export function useNativeMenu(handlersRef, recent) {
             await PredefinedMenuItem.new({ item: "Copy" }),
             await PredefinedMenuItem.new({ item: "Paste" }),
             await PredefinedMenuItem.new({ item: "SelectAll" }),
+            await PredefinedMenuItem.new({ item: "Separator" }),
+            // Find submenu
+            await Submenu.new({
+              text: "Find",
+              items: [
+                await MenuItem.new({
+                  id: "find",
+                  text: "Find…",
+                  accelerator: "CmdOrCtrl+F",
+                  action: () => h().openSearchCurrent?.(),
+                }),
+                await MenuItem.new({
+                  id: "find-in-files",
+                  text: "Find in Files…",
+                  accelerator: "CmdOrCtrl+Shift+F",
+                  action: () => h().openSearchAll?.(),
+                }),
+                await PredefinedMenuItem.new({ item: "Separator" }),
+                await MenuItem.new({
+                  id: "replace",
+                  text: "Replace…",
+                  accelerator: "CmdOrCtrl+R",
+                  action: () => {
+                    h().openSearchCurrent?.();
+                    // Focus replace input after opening
+                    setTimeout(() => h().focusReplaceInput?.(), 0);
+                  },
+                }),
+                await MenuItem.new({
+                  id: "replace-all",
+                  text: "Replace All",
+                  accelerator: "CmdOrCtrl+Shift+R",
+                  action: () => {
+                    if (h().searchMode === "all") {
+                      h().replaceAllFiles?.();
+                    } else {
+                      h().replaceAllCurrent?.();
+                    }
+                  },
+                }),
+                await PredefinedMenuItem.new({ item: "Separator" }),
+                await MenuItem.new({
+                  id: "next-match",
+                  text: "Next Match",
+                  accelerator: "CmdOrCtrl+G",
+                  action: () => h().findNext?.(),
+                }),
+                await MenuItem.new({
+                  id: "prev-match",
+                  text: "Previous Match",
+                  accelerator: "CmdOrCtrl+Shift+G",
+                  action: () => h().findPrev?.(),
+                }),
+              ],
+            }),
           ],
         });
 
