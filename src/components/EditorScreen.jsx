@@ -1,10 +1,12 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Box, Modal, Stack, Text, useMantineTheme } from "@mantine/core";
 import TabBar from "./TabBar";
 import EditorPane from "./EditorPane";
 import PreviewPane from "./PreviewPane";
+import SplitPane from "./SplitPane";
 import { useMarkdownPreview } from "../hooks/useMarkdownPreview";
 import { useScrollSync } from "../hooks/useScrollSync";
+import { loadConfig, saveConfig } from "../lib/medStorage";
 
 export default function EditorScreen({
   docs,
@@ -14,6 +16,10 @@ export default function EditorScreen({
   setContent,
   handleCloseTab,
   handleNew,
+  handleOpenRecent,
+  handleClearRecent,
+  handleDetachTab,
+  recent,
   isDark,
   live,
   aboutOpen,
@@ -25,6 +31,30 @@ export default function EditorScreen({
 
   const editorRef = useRef(null);
   const previewViewportRef = useRef(null);
+  const [splitRatio, setSplitRatio] = useState(0.5);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const cfg = await loadConfig();
+        if (!cancelled && typeof cfg.splitRatio === "number") {
+          setSplitRatio(Math.min(0.82, Math.max(0.18, cfg.splitRatio)));
+        }
+      } catch (_) {}
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const onRatioChange = (next) => {
+    setSplitRatio(next);
+    // Persist without blocking UI
+    loadConfig()
+      .then((cfg) => saveConfig({ ...cfg, splitRatio: next }))
+      .catch(() => {});
+  };
 
   const { html, previewRef } = useMarkdownPreview({
     docId: activeDoc?.id,
@@ -56,29 +86,40 @@ export default function EditorScreen({
         onSelect={setActiveId}
         onClose={handleCloseTab}
         onNew={handleNew}
+        onOpenRecent={handleOpenRecent}
+        onClearRecent={handleClearRecent}
+        onDetachTab={handleDetachTab}
+        recent={recent}
         isDark={isDark}
         border={border}
       />
 
-      <Box style={{ flex: 1, display: "flex", minHeight: 0 }}>
-        <EditorPane
-          key={activeDoc?.id}
-          content={activeDoc?.content}
-          onChange={setContent}
-          isDark={isDark}
-          border={border}
-          editorRef={editorRef}
-          onScroll={onEditorScroll}
-        />
-        <PreviewPane
-          html={html}
-          previewRef={previewRef}
-          viewportRef={previewViewportRef}
-          isDark={isDark}
-          border={border}
-          bg={bg}
-        />
-      </Box>
+      <SplitPane
+        ratio={splitRatio}
+        onRatioChange={onRatioChange}
+        border={border}
+        isDark={isDark}
+        left={
+          <EditorPane
+            key={activeDoc?.id}
+            content={activeDoc?.content}
+            onChange={setContent}
+            isDark={isDark}
+            editorRef={editorRef}
+            onScroll={onEditorScroll}
+          />
+        }
+        right={
+          <PreviewPane
+            html={html}
+            previewRef={previewRef}
+            viewportRef={previewViewportRef}
+            isDark={isDark}
+            border={border}
+            bg={bg}
+          />
+        }
+      />
 
       <Modal opened={aboutOpen} onClose={() => setAboutOpen(false)} title="About MED" centered>
         <Stack gap="xs">

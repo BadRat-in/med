@@ -8,7 +8,7 @@ export default function PreviewPane({ html, previewRef, viewportRef, isDark, bor
 
   return (
     <>
-      <ScrollArea style={{ flex: 1, background: bg, minWidth: 0 }} type="auto" viewportRef={viewportRef}>
+      <ScrollArea style={{ flex: 1, background: bg, minWidth: 0, height: "100%" }} type="auto" viewportRef={viewportRef}>
         <Box
           ref={previewRef}
           className={`markdown-body ${isDark ? "md-dark" : "md-light"}`}

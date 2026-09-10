@@ -4,7 +4,6 @@ export default function EditorPane({
   content,
   onChange,
   isDark,
-  border,
   editorRef,
   onScroll,
 }) {
@@ -16,11 +15,11 @@ export default function EditorPane({
     <Box
       style={{
         flex: 1,
-        borderRight: `1px solid ${border}`,
         background: editorBg,
         display: "flex",
         flexDirection: "column",
         minWidth: 0,
+        height: "100%",
       }}
     >
       <textarea
