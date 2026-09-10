@@ -43,7 +43,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .manage(OpenedFiles(Mutex::new(Vec::new())))
         .invoke_handler(tauri::generate_handler![get_opened_files])
-        .setup(|app| {
+        .setup(|_app| {
             // Windows / Linux: files passed as CLI args when launched via association
             #[cfg(any(windows, target_os = "linux"))]
             {
