@@ -1,16 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  Box,
-  Tabs,
-  Text,
-  ActionIcon,
-  Menu,
-  ScrollArea,
-  Group,
-  UnstyledButton
-} from "@mantine/core";
-import { basename, toTildePath } from "../lib/paths";
-import { homeDir } from "@tauri-apps/api/path";
+import { ActionIcon, Box, Group, Menu, ScrollArea, Tabs, Text, UnstyledButton } from '@mantine/core'
+import { homeDir } from '@tauri-apps/api/path'
+import { useEffect, useRef, useState } from 'react'
+import { basename, toTildePath } from '../lib/paths'
 
 export default function TabBar({
   docs,
@@ -25,42 +16,42 @@ export default function TabBar({
   isDark,
   border,
 }) {
-  const [home, setHome] = useState("");
-  const dragIdRef = useRef(null);
-  const [draggingId, setDraggingId] = useState(null);
+  const [home, setHome] = useState('')
+  const dragIdRef = useRef(null)
+  const [draggingId, setDraggingId] = useState(null)
 
   useEffect(() => {
     homeDir()
       .then(setHome)
-      .catch(() => setHome(""));
-  }, []);
+      .catch(() => setHome(''))
+  }, [])
 
   const onTabDragStart = (e, id) => {
-    dragIdRef.current = id;
-    setDraggingId(id);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", id);
-  };
+    dragIdRef.current = id
+    setDraggingId(id)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', id)
+  }
 
   const onTabDragEnd = (e) => {
-    const id = dragIdRef.current;
-    dragIdRef.current = null;
-    setDraggingId(null);
-    if (!id) return;
+    const id = dragIdRef.current
+    dragIdRef.current = null
+    setDraggingId(null)
+    if (!id) return
 
     // If dropped outside the window, detach into a new window
     const outside =
       e.clientX < 0 ||
       e.clientY < 0 ||
       e.clientX > window.innerWidth ||
-      e.clientY > window.innerHeight;
+      e.clientY > window.innerHeight
     if (outside) {
-      onDetachTab?.(id);
+      onDetachTab?.(id)
     }
-  };
+  }
 
-  const headerBg = isDark ? "#1e1e1e" : "#e8e8e8";
-  const menuBg = isDark ? "#2a2a2a" : "#ffffff";
+  const headerBg = isDark ? '#1e1e1e' : '#e8e8e8'
+  const menuBg = isDark ? '#2a2a2a' : '#ffffff'
 
   return (
     <Box
@@ -68,57 +59,53 @@ export default function TabBar({
         borderBottom: `1px solid ${border}`,
         background: headerBg,
         flexShrink: 0,
-        WebkitAppRegion: "drag",
-        display: "flex",
-        alignItems: "stretch",
+        WebkitAppRegion: 'drag',
+        display: 'flex',
+        alignItems: 'stretch',
       }}
     >
-      <Box style={{ flex: 1, minWidth: 0, WebkitAppRegion: "no-drag" }}>
+      <Box style={{ flex: 1, minWidth: 0, WebkitAppRegion: 'no-drag', maxHeight: 40 }}>
         <Tabs value={activeId} onChange={(id) => id && onSelect(id)} variant="outline">
           <Tabs.List
             style={{
-              flexWrap: "nowrap",
-              overflowX: "auto",
-              borderBottom: "none",
+              flexWrap: 'nowrap',
+              overflowX: 'auto',
+              borderBottom: 'none',
               paddingLeft: 4,
               paddingTop: 4,
             }}
           >
             {docs.map((d) => (
-<Tabs.Tab
-                  key={d.id}
-                  value={d.id}
-                  draggable
-                  onDragStart={(e) => onTabDragStart(e, d.id)}
-                  onDragEnd={onTabDragEnd}
-                  rightSection={
-                    <ActionIcon
-                      size="xs"
-                      variant="subtle"
-                      color="gray"
-                      onClick={(e) => onClose(d.id, e)}
-                      aria-label="Close tab"
-                      style={{ flexShrink: 0 }}
-                    >
-                      ×
-                    </ActionIcon>
-                  }
-                  style={{
-                    maxWidth: 180,
-                    minWidth: 0,
-                    opacity: draggingId === d.id ? 0.5 : 1,
-                    cursor: "grab",
-                    background:
-                      d.id === activeId
-                        ? isDark
-                          ? "#2a2a2a"
-                          : "#f7f7f7"
-                        : "transparent",
-                  }}
-                  title="Drag outside the window to open in a new window"
-                >
+              <Tabs.Tab
+                key={d.id}
+                value={d.id}
+                draggable
+                onDragStart={(e) => onTabDragStart(e, d.id)}
+                onDragEnd={onTabDragEnd}
+                rightSection={
+                  <ActionIcon
+                    size="xs"
+                    variant="subtle"
+                    color="gray"
+                    onClick={(e) => onClose(d.id, e)}
+                    aria-label="Close tab"
+                    style={{ flexShrink: 0 }}
+                  >
+                    ×
+                  </ActionIcon>
+                }
+                style={{
+                  maxWidth: 200,
+                  maxHeight: 35,
+                  minWidth: 0,
+                  opacity: draggingId === d.id ? 0.5 : 1,
+                  cursor: 'grab',
+                  background: d.id === activeId ? (isDark ? '#2a2a2a' : '#f7f7f7') : 'transparent',
+                }}
+                title="Drag outside the window to open in a new window"
+              >
                 <Text size="xs" lineClamp={1}>
-                  {d.dirty ? "• " : ""}
+                  {d.dirty ? '• ' : ''}
                   {d.title?.length > 18 ? `${d.title.slice(0, 18)}...` : d.title}
                 </Text>
               </Tabs.Tab>
@@ -141,11 +128,11 @@ export default function TabBar({
       {/* Recent — top-right of tab bar */}
       <Box
         style={{
-          display: "flex",
-          alignItems: "center",
-          paddingRight: 8,
+          display: 'flex',
+          alignItems: 'center',
+          paddingRight: 16,
           paddingLeft: 4,
-          WebkitAppRegion: "no-drag",
+          WebkitAppRegion: 'no-drag',
           flexShrink: 0,
         }}
       >
@@ -157,12 +144,8 @@ export default function TabBar({
           styles={{ dropdown: { background: menuBg } }}
         >
           <Menu.Target>
-            <UnstyledButton
-              variant="subtle"
-              title="Recent files"
-              aria-label="Recent files"
-            >
-              <Text size="xs" fw={600} c="gray" style={{ letterSpacing: "0.02em" }}>
+            <UnstyledButton variant="subtle" title="Recent files" aria-label="Recent files">
+              <Text size="xs" fw={600} c="gray" style={{ letterSpacing: '0.02em' }}>
                 Recent
               </Text>
             </UnstyledButton>
@@ -174,26 +157,25 @@ export default function TabBar({
             ) : (
               <ScrollArea.Autosize mah={280} type="scroll" offsetScrollbars>
                 {recent.map((item) => {
-                  const path = item?.path ?? item;
-                  const fBasename = basename(path);
-                  const fPath = toTildePath(path, home);
+                  const path = item?.path ?? item
+                  const fBasename = basename(path)
+                  const fPath = toTildePath(path, home)
                   return (
-                    <Menu.Item
-                      key={path}
-                      onClick={() => onOpenRecent?.(path)}
-                    >
+                    <Menu.Item key={path} onClick={() => onOpenRecent?.(path)}>
                       <Group gap={6} wrap="nowrap" align="flex-start">
                         <Box style={{ minWidth: 0 }}>
                           <Text size="sm" fw={500} lineClamp={1}>
-                            {fBasename?.length > 30 ? fBasename.slice(0, 30) + "..." : fBasename}
+                            {fBasename?.length > 30 ? `${fBasename.slice(0, 30)}...` : fBasename}
                           </Text>
                           <Text size="xs" c="dimmed" lineClamp={1}>
-                            {fPath?.length > 40 ? fPath.slice(0, 20) + "..." + fPath.slice(-20) : fPath}
+                            {fPath?.length > 40
+                              ? `${fPath.slice(0, 20)}...${fPath.slice(-20)}`
+                              : fPath}
                           </Text>
                         </Box>
                       </Group>
                     </Menu.Item>
-                  );
+                  )
                 })}
               </ScrollArea.Autosize>
             )}
@@ -209,5 +191,5 @@ export default function TabBar({
         </Menu>
       </Box>
     </Box>
-  );
+  )
 }
