@@ -85,36 +85,38 @@ export default function TabBar({
             }}
           >
             {docs.map((d) => (
-              <Tabs.Tab
-                key={d.id}
-                value={d.id}
-                draggable
-                onDragStart={(e) => onTabDragStart(e, d.id)}
-                onDragEnd={onTabDragEnd}
-                rightSection={
-                  <ActionIcon
-                    size="xs"
-                    variant="subtle"
-                    color="gray"
-                    onClick={(e) => onClose(d.id, e)}
-                    aria-label="Close tab"
-                  >
-                    ×
-                  </ActionIcon>
-                }
-                style={{
-                  maxWidth: 180,
-                  opacity: draggingId === d.id ? 0.5 : 1,
-                  cursor: "grab",
-                  background:
-                    d.id === activeId
-                      ? isDark
-                        ? "#2a2a2a"
-                        : "#f7f7f7"
-                      : "transparent",
-                }}
-                title="Drag outside the window to open in a new window"
-              >
+<Tabs.Tab
+                  key={d.id}
+                  value={d.id}
+                  draggable
+                  onDragStart={(e) => onTabDragStart(e, d.id)}
+                  onDragEnd={onTabDragEnd}
+                  rightSection={
+                    <ActionIcon
+                      size="xs"
+                      variant="subtle"
+                      color="gray"
+                      onClick={(e) => onClose(d.id, e)}
+                      aria-label="Close tab"
+                      style={{ flexShrink: 0 }}
+                    >
+                      ×
+                    </ActionIcon>
+                  }
+                  style={{
+                    maxWidth: 180,
+                    minWidth: 0,
+                    opacity: draggingId === d.id ? 0.5 : 1,
+                    cursor: "grab",
+                    background:
+                      d.id === activeId
+                        ? isDark
+                          ? "#2a2a2a"
+                          : "#f7f7f7"
+                        : "transparent",
+                  }}
+                  title="Drag outside the window to open in a new window"
+                >
                 <Text size="xs" lineClamp={1}>
                   {d.dirty ? "• " : ""}
                   {d.title?.length > 18 ? `${d.title.slice(0, 18)}...` : d.title}
