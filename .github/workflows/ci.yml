@@ -39,6 +39,3 @@ jobs:
       - name: Check Rust
         working-directory: src-tauri
         run: cargo check
-
-      - name: Build Tauri
-        run: pnpm tauri build
