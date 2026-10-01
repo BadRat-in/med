@@ -15,15 +15,15 @@
     "format:fix": "biome format --write ."
   },
   "dependencies": {
-    "@mantine/core": "^9.6.1",
-    "@mantine/hooks": "^9.6.1",
-    "@tabler/icons-react": "^3.46.0",
-    "@tauri-apps/api": "^2.0.0",
-    "@tauri-apps/plugin-dialog": "^2.0.0",
-    "@tauri-apps/plugin-fs": "^2.0.0",
-    "@tauri-apps/plugin-opener": "^2.5.5",
+    "@mantine/core": "^9.6.3",
+    "@mantine/hooks": "^9.6.3",
+    "@tabler/icons-react": "^3.48.0",
+    "@tauri-apps/api": "^2.12.0",
+    "@tauri-apps/plugin-dialog": "^2.8.0",
+    "@tauri-apps/plugin-fs": "^2.6.0",
+    "@tauri-apps/plugin-opener": "^2.6.0",
     "highlight.js": "^11.10.0",
-    "marked": "^18.0.13",
+    "marked": "^18.0.14",
     "mermaid": "^12.0.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
